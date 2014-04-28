@@ -65,8 +65,30 @@ define(['xhr'], function(xhr) {
         return d.promise();
     };
 
+    var getGeoData = function(projectId, geoLabel, metric) {
+        var template = {
+            "geoExecutionRequest": {
+                "metric":metric,
+                "layerDisplayForm":geoLabel
+            }
+        };
+
+        var d = $.Deferred();
+
+        xhr.post('/gdc/app/projects/'+ projectId +'/execute', {
+            data: JSON.stringify(template)
+        }).then(function(result) {
+            return xhr.get(result.execResult.geoResult);
+        }, d.reject).then(function(result) {
+            d.resolve(result);
+        }, d.reject);
+
+        return d.promise();
+    };
+
     return {
-        getData: getData
+        getData: getData,
+        getGeoData: getGeoData
     };
 });
 
