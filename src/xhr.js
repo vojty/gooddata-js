@@ -2,6 +2,7 @@
 /*eslint no-use-before-define: [2, "nofunc"]*/
 import $ from 'jquery';
 import * as config from './config';
+import fetch from 'isomorphic-fetch';
 import isPlainObject from 'lodash/lang/isPlainObject';
 import isFunction from 'lodash/lang/isFunction';
 import isArray from 'lodash/lang/isArray';
@@ -119,6 +120,10 @@ export function ajaxSetup(settings) {
     }, settings);
 }
 
+export function ajax(url) { // , settings) {
+    return fetch(url);
+}
+
 /**
  * Same api as jQuery.ajax - arguments (url, settings) or (settings) with url inside
  * Additionally content type is automatically json, and object in settings.data is converted to string
@@ -129,7 +134,7 @@ export function ajaxSetup(settings) {
  * @param url request url
  * @param settings settings object
  */
-export function ajax(url, settings) {
+export function ajax_(url, settings) {
     let finalSettings;
     let finalUrl;
     if (isPlainObject(url)) {
