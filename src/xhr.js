@@ -2,7 +2,7 @@
 /*eslint no-use-before-define: [2, "nofunc"]*/
 import $ from 'jquery';
 import * as config from './config';
-import fetch from 'isomorphic-fetch';
+import 'isomorphic-fetch'; // do not import fetch from 'isomorphic-fetch'!!
 import isPlainObject from 'lodash/lang/isPlainObject';
 import isFunction from 'lodash/lang/isFunction';
 import isArray from 'lodash/lang/isArray';
