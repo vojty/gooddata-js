@@ -1,5 +1,4 @@
 import { get, find, omit, cloneDeep } from 'lodash';
-import { post, parseJSON } from './xhr';
 import { mdToExecutionConfiguration } from './execution/experimental-executions';
 
 const REQUEST_DEFAULTS = {
@@ -79,65 +78,72 @@ const getRequiredDataSets = (options) => {
     return { requiredDataSets: { type: 'PRODUCTION' } };
 };
 
-function loadCatalog(projectId, catalogRequest) {
-    const uri = `/gdc/internal/projects/${projectId}/loadCatalog`;
+export function createModule(xhr) {
+    function loadCatalog(projectId, catalogRequest) {
+        const uri = `/gdc/internal/projects/${projectId}/loadCatalog`;
 
-    return post(uri, { data: { catalogRequest } })
-        .then(parseJSON)
-        .then(data => data.catalogResponse);
-}
-
-export function loadItems(projectId, options = {}) {
-    const request = omit({
-        ...REQUEST_DEFAULTS,
-        ...options,
-        ...getRequiredDataSets(options)
-    }, ['dataSetIdentifier', 'returnAllDateDataSets']);
-
-    let bucketItems = get(cloneDeep(options), 'bucketItems.buckets');
-    if (bucketItems) {
-        bucketItems = bucketItemsToExecConfig(bucketItems);
-        return loadCatalog(
-            projectId,
-            {
-                ...request,
-                bucketItems
-            }
-        );
+        return xhr.post(uri, { data: { catalogRequest } })
+            .then(xhr.parseJSON)
+            .then(data => data.catalogResponse);
     }
 
-    return loadCatalog(projectId, request);
-}
+    function loadItems(projectId, options = {}) {
+        const request = omit({
+            ...REQUEST_DEFAULTS,
+            ...options,
+            ...getRequiredDataSets(options)
+        }, ['dataSetIdentifier', 'returnAllDateDataSets']);
 
-function requestDateDataSets(projectId, dateDataSetsRequest) {
-    const uri = `/gdc/internal/projects/${projectId}/loadDateDataSets`;
+        let bucketItems = get(cloneDeep(options), 'bucketItems.buckets');
+        if (bucketItems) {
+            bucketItems = bucketItemsToExecConfig(bucketItems);
+            return loadCatalog(
+                projectId,
+                {
+                    ...request,
+                    bucketItems
+                }
+            );
+        }
 
-    return post(uri, { data: { dateDataSetsRequest } })
-        .then(parseJSON)
-        .then(data => data.dateDataSetsResponse);
-}
-
-export function loadDateDataSets(projectId, options) {
-    let bucketItems = get(cloneDeep(options), 'bucketItems.buckets');
-
-    if (bucketItems) {
-        bucketItems = bucketItemsToExecConfig(bucketItems, { removeDateItems: true });
+        return loadCatalog(projectId, request);
     }
 
-    const omittedOptions = ['filter', 'types', 'paging', 'dataSetIdentifier', 'returnAllDateDataSets', 'returnAllRelatedDateDataSets'];
-    // includeObjectsWithTags has higher priority than excludeObjectsWithTags,
-    // so when present omit excludeObjectsWithTags
-    if (options.includeObjectsWithTags) {
-        omittedOptions.push('excludeObjectsWithTags');
+    function requestDateDataSets(projectId, dateDataSetsRequest) {
+        const uri = `/gdc/internal/projects/${projectId}/loadDateDataSets`;
+
+        return xhr.post(uri, { data: { dateDataSetsRequest } })
+            .then(xhr.parseJSON)
+            .then(data => data.dateDataSetsResponse);
     }
 
-    const request = omit({
-        ...LOAD_DATE_DATASET_DEFAULTS,
-        ...REQUEST_DEFAULTS,
-        ...options,
-        ...getRequiredDataSets(options),
-        bucketItems
-    }, omittedOptions);
+    function loadDateDataSets(projectId, options) {
+        let bucketItems = get(cloneDeep(options), 'bucketItems.buckets');
 
-    return requestDateDataSets(projectId, request);
+        if (bucketItems) {
+            bucketItems = bucketItemsToExecConfig(bucketItems, { removeDateItems: true });
+        }
+
+        const omittedOptions = ['filter', 'types', 'paging', 'dataSetIdentifier', 'returnAllDateDataSets', 'returnAllRelatedDateDataSets'];
+        // includeObjectsWithTags has higher priority than excludeObjectsWithTags,
+        // so when present omit excludeObjectsWithTags
+        if (options.includeObjectsWithTags) {
+            omittedOptions.push('excludeObjectsWithTags');
+        }
+
+        const request = omit({
+            ...LOAD_DATE_DATASET_DEFAULTS,
+            ...REQUEST_DEFAULTS,
+            ...options,
+            ...getRequiredDataSets(options),
+            bucketItems
+        }, omittedOptions);
+
+        return requestDateDataSets(projectId, request);
+    }
+
+    return {
+        loadItems,
+        loadDateDataSets
+    };
 }

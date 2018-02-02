@@ -231,7 +231,7 @@ describe('execution', () => {
                             isPoP: undefined
                         });
                     }).catch(() => {
-                        expect().fail('Should not fail when processing mappings');
+                        throw new Error('Should not fail when processing mappings');
                     });
                 });
 

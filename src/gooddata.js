@@ -1,12 +1,12 @@
 // Copyright (C) 2007-2014, GoodData(R) Corporation. All rights reserved.
-import * as xhr from './xhr';
-import * as user from './user';
-import * as md from './metadata';
-import execution from './execution';
-import * as project from './project';
-import * as config from './config';
-import * as catalogue from './catalogue';
-import admin from './admin';
+import { createModule as xhrFactory } from './xhr';
+import { createModule as userFactory } from './user';
+import { createModule as metadataFactory } from './metadata';
+import { createModule as executionFactory } from './execution';
+import { createModule as projectFactory } from './project';
+import { createModule as configFactory } from './config';
+import { createModule as catalogueFactory } from './catalogue';
+import { createModule as adminFactory } from './admin';
 
 /**
  * # JS SDK
@@ -25,7 +25,37 @@ import admin from './admin';
  * @module sdk
  * @class sdk
  */
-const gooddata = { config, xhr, user, md, execution, project, catalogue, admin };
-export default gooddata;
-module.exports = gooddata;
+// const gooddata = { config, xhr, user, md, execution, project, catalogue, admin };
+// export default gooddata;
+// module.exports = gooddata;
 
+function factory(domain) {
+    const config = configFactory();
+    if (domain) {
+        config.setCustomDomain(domain);
+    }
+    const xhr = xhrFactory(config);
+
+    return {
+        domain,
+        config,
+        xhr,
+        user: userFactory(xhr),
+        md: metadataFactory(xhr),
+        execution: executionFactory(xhr),
+        project: projectFactory(xhr),
+        catalogue: catalogueFactory(xhr),
+        admin: adminFactory(xhr)
+    };
+}
+
+let defaultInstance; // eslint-disable-line import/no-mutable-exports
+if (!defaultInstance) {
+    defaultInstance = factory();
+}
+
+export {
+    factory
+};
+
+export default defaultInstance;

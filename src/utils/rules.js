@@ -11,6 +11,7 @@ export default class Rules {
     }
 
     match(subject) {
+        // eslint-disable-next-line jest/no-disabled-tests
         const [, callback] = find(this.rules, ([tests]) => every(tests, test => test(subject)));
 
         invariant(callback, 'Callback not found :-(');

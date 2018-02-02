@@ -148,24 +148,24 @@ export function getData(projectId, columns, executionConfiguration = {}, setting
         ...settings,
         body: JSON.stringify(request)
     })
-    .then(parseJSON)
-    .then((result) => {
-        executedReport.headers = wrapMeasureIndexesFromMappings(
-            get(executionConfiguration, 'metricMappings'), result.executionResult.headers);
+        .then(parseJSON)
+        .then((result) => {
+            executedReport.headers = wrapMeasureIndexesFromMappings(
+                get(executionConfiguration, 'metricMappings'), result.executionResult.headers);
 
-        // Start polling on url returned in the executionResult for tabularData
-        return loadExtendedDataResults(result.executionResult.extendedTabularDataResult, settings);
-    })
-    .then((r) => {
-        const { result, status } = r;
+            // Start polling on url returned in the executionResult for tabularData
+            return loadExtendedDataResults(result.executionResult.extendedTabularDataResult, settings);
+        })
+        .then((r) => {
+            const { result, status } = r;
 
-        return Object.assign({}, executedReport, {
-            rawData: get(result, 'extendedTabularDataResult.values', []),
-            warnings: get(result, 'extendedTabularDataResult.warnings', []),
-            isLoaded: true,
-            isEmpty: status === 204
+            return Object.assign({}, executedReport, {
+                rawData: get(result, 'extendedTabularDataResult.values', []),
+                warnings: get(result, 'extendedTabularDataResult.warnings', []),
+                isLoaded: true,
+                isEmpty: status === 204
+            });
         });
-    });
 }
 
 const MAX_TITLE_LENGTH = 1000;
@@ -216,7 +216,7 @@ const getGeneratedMetricExpression = (item) => {
     const where = filter(map(get(item, 'measureFilters'), getFilterExpression), e => !!e);
 
     return `SELECT ${aggregation ? `${aggregation}([${objectUri}])` : `[${objectUri}]`
-        }${notEmpty(where) ? ` WHERE ${where.join(' AND ')}` : ''}`;
+    }${notEmpty(where) ? ` WHERE ${where.join(' AND ')}` : ''}`;
 };
 
 const getPercentMetricExpression = ({ category }, measure) => {
