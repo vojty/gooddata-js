@@ -3,10 +3,6 @@ import {
     set
 } from 'lodash';
 
-import {
-    getObjects
-} from '../metadata';
-
 function getAttributeUris(displayForms) {
     return displayForms.map(
         displayForm => get(displayForm, ['attributeDisplayForm', 'content', 'formOf'])
@@ -25,15 +21,17 @@ function createAttributesMap(displayForms, attributes) {
     {});
 }
 
-export function loadAttributesMap(projectId, attributeDisplayFormUris) {
-    if (attributeDisplayFormUris.length === 0) {
-        return Promise.resolve({});
-    }
+export function createModule(md) {
+    return function loadAttributesMap(projectId, attributeDisplayFormUris) {
+        if (attributeDisplayFormUris.length === 0) {
+            return Promise.resolve({});
+        }
 
-    return getObjects(projectId, attributeDisplayFormUris).then((displayForms) => {
-        const attributeUris = getAttributeUris(displayForms);
-        return getObjects(projectId, attributeUris).then((attributes) => {
-            return createAttributesMap(displayForms, attributes);
+        return md.getObjects(projectId, attributeDisplayFormUris).then((displayForms) => {
+            const attributeUris = getAttributeUris(displayForms);
+            return md.getObjects(projectId, attributeUris).then((attributes) => {
+                return createAttributesMap(displayForms, attributes);
+            });
         });
-    });
+    };
 }
