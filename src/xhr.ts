@@ -10,7 +10,7 @@ import {
 
 import { thisPackage } from './util';
 import { fetch } from './utils/fetch';
-import { IXhr, IXhrSettings } from './interfaces';
+import { IXhr } from './interfaces';
 
 /**
  * Ajax wrapper around GDC authentication mechanisms, SST and TT token handling and polling.
@@ -26,7 +26,7 @@ import { IXhr, IXhrSettings } from './interfaces';
 
 const DEFAULT_POLL_DELAY = 1000;
 
-function simulateBeforeSend(url, settings) {
+function simulateBeforeSend(url: string, settings: any) {
     const xhrMockInBeforeSend = {
         setRequestHeader(key: string, value: string) {
             _set(settings, ['headers', key], value);
@@ -53,7 +53,7 @@ function enrichSettingWithCustomDomain(originalUrl: string, originalSettings: an
     return { url, settings };
 }
 
-export function handlePolling(url, settings, sendRequest) {
+export function handlePolling(url: string, settings: any, sendRequest: Function) {
     const pollingDelay = result(settings, 'pollDelay');
 
     return new Promise((resolve, reject) => {
@@ -76,14 +76,14 @@ export function originPackageHeaders({ name, version }: IPackageHeaders) {
 }
 
 export class ApiError extends Error {
-    constructor(message, cause) {
+    constructor(message: string, cause) {
         super(message);
         this.cause = cause;
     }
 }
 
 export class ApiResponseError extends ApiError {
-    constructor(message, response, responseBody) {
+    constructor(message: string, response, responseBody) {
         super(message, null);
         this.response = response;
         this.responseBody = responseBody;
@@ -93,7 +93,10 @@ export class ApiResponseError extends ApiError {
 export class ApiNetworkError extends ApiError {}
 
 export class ApiResponse {
-    constructor(response, responseBody) {
+    public response: Response;
+    public responseBody: string;
+
+    constructor(response: Response, responseBody: string) {
         this.response = response;
         this.responseBody = responseBody;
     }
@@ -115,7 +118,7 @@ export class ApiResponse {
     }
 }
 
-export function createModule(configStorage) {
+export function createModule(configStorage): IXhr {
     let tokenRequest; // TODO make app-wide persistent (ie. extract outside of the SDK)
 
     defaults(configStorage, { xhrSettings: {} });
@@ -158,7 +161,7 @@ export function createModule(configStorage) {
         Object.assign(configStorage.xhrSettings, settings);
     }
 
-    function continueAfterTokenRequest(url, settings) {
+    function continueAfterTokenRequest(url: string, settings: any) {
         return tokenRequest.then(async (response) => {
             if (!response.ok) {
                 throw new ApiResponseError('Unauthorized', response, null);
@@ -172,7 +175,7 @@ export function createModule(configStorage) {
         });
     }
 
-    async function handleUnauthorized(originalUrl, originalSettings) {
+    async function handleUnauthorized(originalUrl: string, originalSettings: any) {
         // Create only single token request for any number of waiting request.
         // If token request exist, just listen for it's end.
         if (tokenRequest) {
@@ -200,7 +203,7 @@ export function createModule(configStorage) {
         return new ApiResponse(response, responseBody);
     }
 
-    async function ajax(originalUrl, customSettings = {}) {
+    async function ajax(originalUrl: string, customSettings = {}) {
         // TODO refactor to: getRequestParams(originalUrl, customSettings);
         const firstSettings = createRequestSettings(customSettings);
         const { url, settings } = enrichSettingWithCustomDomain(originalUrl, firstSettings, configStorage.domain);
@@ -257,8 +260,8 @@ export function createModule(configStorage) {
         throw new ApiResponseError(response.statusText, response, responseBody);
     }
 
-    function xhrMethod(method) {
-        return function xhrMethodFn(url, settings) {
+    function xhrMethod(method: string) {
+        return function xhrMethodFn(url: string, settings: any) {
             const opts = merge({ method }, settings);
             return ajax(url, opts);
         };

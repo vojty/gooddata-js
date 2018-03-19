@@ -426,9 +426,15 @@ export interface IUtils {
     getAttributesDisplayForms(mdObject: VisualizationObject.IVisualizationObject): string[];
 }
 
-declare class ApiResponse<T> {
-    public response: Response;
-    public responseBody: string;
+// declare class ApiResponse<T> {
+//     public response: Response;
+//     public responseBody: string;
+//     getData(): T;
+// }
+
+export interface IApiResponse<T> {
+    response: Response;
+    responseBody: string;
     getData(): T;
 }
 
@@ -448,7 +454,6 @@ declare class ApiNetworkError extends ApiError {
 }
 
 
-
 export interface IXhrMockInBeforeSend {
     setRequestHeader(key: string, value: string): void;
 }
@@ -460,10 +465,11 @@ export interface IXhrSettings {
 }
 
 export interface IXhr { // all throws ApiError()
-    get<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
-    post<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
-    put<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
-    ajax<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
+    get<T>(uri: string, settings?: IXhrSettings): Promise<IApiResponse<T>>;
+    post<T>(uri: string, settings?: IXhrSettings): Promise<IApiResponse<T>>;
+    put<T>(uri: string, settings?: IXhrSettings): Promise<IApiResponse<T>>;
+    del<T>(uri: string, settings?: IXhrSettings): Promise<IApiResponse<T>>;
+    ajax<T>(uri: string, settings?: IXhrSettings): Promise<IApiResponse<T>>;
     ajaxSetup(settings: IXhrSettings): void;
 }
 

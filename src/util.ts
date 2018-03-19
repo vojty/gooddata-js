@@ -50,8 +50,8 @@ export const handlePolling = (xhrGet: any, uri: string, isPollingDone: Function,
     } = options;
 
     return xhrGet(uri)
-        .then(r => r.getData())
-        .then((response) => {
+        .then((r: any) => r.getData())
+        .then((response: any) => {
             if (attempts > maxAttempts) {
                 return Promise.reject(new Error(response));
             }

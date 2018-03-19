@@ -71,7 +71,7 @@ export function createModule(xhr: IXhr): IUser {
             if (loggedIn) {
                 return xhr
                     .get('/gdc/app/account/bootstrap')
-                    .then((result) => {
+                    .then((result: any) => {
                         const data = result.getData();
                         const userUri = data.bootstrapResource.accountSetting.links.self;
                         const userId = userUri.match(/([^\/]+)\/?$/)[1]; // eslint-disable-line no-useless-escape
@@ -124,7 +124,7 @@ export function createModule(xhr: IXhr): IUser {
     function getFeatureFlags() {
         return xhr.get('/gdc/app/account/bootstrap')
             .then((r => r.getData()))
-            .then(result => result.bootstrapResource.current.featureFlags);
+            .then((result: any) => result.bootstrapResource.current.featureFlags);
     }
 
     return {

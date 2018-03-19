@@ -47,7 +47,7 @@ export function createModule(xhr: IXhr) {
     function getCurrentProjectId() {
         return xhr.get('/gdc/app/account/bootstrap')
             .then(r => r.getData())
-            .then((result) => {
+            .then((result: any) => {
                 const currentProject = result.bootstrapResource.current.project;
                 // handle situation in which current project is missing (e.g. new user)
                 if (!currentProject) {
@@ -65,11 +65,11 @@ export function createModule(xhr: IXhr) {
      * @param {String} profileId - User profile identifier
      * @return {Array} An Array of projects
      */
-    function getProjects(profileId) {
+    function getProjects(profileId: string) {
         return xhr.get(`/gdc/account/profile/${profileId}/projects`)
             .then(r => r.getData())
-            .then((r) => {
-                return r.projects.map(p => p.project);
+            .then((r: any) => {
+                return r.projects.map((p: any) => p.project);
             });
     }
 
@@ -80,7 +80,7 @@ export function createModule(xhr: IXhr) {
      * @param {String} projectId - GD project identifier
      * @return {Array} An array of objects containing datasets metadata
      */
-    function getDatasets(projectId) {
+    function getDatasets(projectId: string) {
         return xhr.get(`/gdc/md/${projectId}/query/datasets`)
             .then(r => r.getData())
             .then(getIn('query.entries'));
@@ -95,11 +95,11 @@ export function createModule(xhr: IXhr) {
      * @return {Array} An array of objects with r, g, b fields representing a project's
      * color palette
      */
-    function getColorPalette(projectId) {
+    function getColorPalette(projectId: string) {
         return xhr.get(`/gdc/projects/${projectId}/styleSettings`)
             .then(r => r.getData())
-            .then((result) => {
-                return result.styleSettings.chartPalette.map((c) => {
+            .then((result: any) => {
+                return result.styleSettings.chartPalette.map((c: any) => {
                     return {
                         r: c.fill.r,
                         g: c.fill.g,
@@ -152,7 +152,7 @@ export function createModule(xhr: IXhr) {
 
         return xhr.get(bootstrapUrl)
             .then((r => r.getData()))
-            .then((result) => {
+            .then((result: any) => {
                 return result.bootstrapResource.current.timezone;
             });
     }
@@ -206,7 +206,7 @@ export function createModule(xhr: IXhr) {
             })
         })
             .then((r => r.getData()))
-            .then(project =>
+            .then((project: any) =>
                 handlePolling(xhr.get, project.uri, (response: any) => { // TODO project response
                     return isProjectCreated(response.project);
                 }, options));
