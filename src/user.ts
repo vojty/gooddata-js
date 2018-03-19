@@ -58,7 +58,7 @@ export function createModule(xhr: IXhr): IUser {
      * @param {String} serverUrl
      * @param {String} targetUrl
      */
-    function loginSso(sessionId, serverUrl, targetUrl) {
+    function loginSso(sessionId: string, serverUrl: string, targetUrl: string) {
         return xhr.get(`/gdc/account/customerlogin?sessionId=${sessionId}&serverURL=${serverUrl}&targetURL=${targetUrl}`);
     }
 

@@ -92,13 +92,13 @@ export interface IEtlPullResponse {
 export interface IMetadata {
     getObjects<T>(projectId: string, objectUris: string[]): Promise<T>;
 
-    getObjectsByQuery<T>(projectId: string, options: IGetObjectsByQueryOptions): Promise<T>;
+    getObjectsByQuery<T>(projectId: string, options: { category?: string, mode?: string, author?: string, limit?: number }): Promise<T>;
 
-    getObjectUsing<T>(projectId: string, uri: string, options?: IGetObjectUsingOptions): T;
+    getObjectUsing<T>(projectId: string, uri: string, options?: { types?: string[], nearest?: boolean }): T;
 
-    getObjectUsingMany<T>(projectId: string, uris: string[], options?: IGetObjectUsingOptions): T;
+    getObjectUsingMany<T>(projectId: string, uris: string[], options?: { types?: string[], nearest?: boolean }): T;
 
-    getAttributes(projectId: string): Promise<any>;
+    getAttribute(projectId: string): Promise<any>;
 
     getVisualizations(projectId: string): Promise<any>;
 
@@ -138,7 +138,7 @@ export interface IMetadata {
 
     ldmManage(projectId: string, maql: string, options: { maxAttempts?: number, pollStep?: number }): Promise<any>;
 
-    etlPull(projectId: string, uploadsDir: string, options: { maxAttempts?: number, pollStep?: number }): Promise<IEtlPullResponse>;
+    etlPull(projectId: string, uploadsDir: string, options: { maxAttempts?: number, pollStep?: number }): Promise<any>;
 }
 
 export interface IConfig {
@@ -371,6 +371,8 @@ export interface IVisualizationObject {
 }
 
 export interface IExecution {
+    getDataForVis(projectId: string, mdObj: IVisualizationObjectContent, settings: any): Promise<ISimpleExecutorResult>;
+
     getData(projectId: string, columns: string[], executionConfiguration: IExecutionConfiguration, settings: any): Promise<ISimpleExecutorResult>;
 
     mdToExecutionDefinitionsAndColumns(projectId: string, mdObj: any, options: any): any; // TODO
@@ -407,15 +409,15 @@ export interface IProject {
 
     getColorPalette(projectId: string): Promise<IColor[]>;
 
-    setColorPalette(projectId: string, colors: IColor[]): Promise<Response>;
+    setColorPalette(projectId: string, colors: IColor[]): Promise<void>;
 
-    getTimezone(projectId: string): Promise<ITimezone>;
+    getTimezone(projectId: string): Promise<string>;
 
-    setTimezone(projectId: string, timezone: ITimezone): Promise<void>;
+    setTimezone(projectId: string, timezone: string): Promise<void>;
 
-    createProject(title: string, authorizationToken: string, options?: ICreateProjectOptions): Promise<any>;
+    createProject(title: string, authorizationToken: string, options?: object): Promise<any>;
 
-    deleteProject(projectId: string): Promise<Response>;
+    deleteProject(projectId: string): Promise<void>;
 }
 
 export interface IUtils {
@@ -423,6 +425,29 @@ export interface IUtils {
 
     getAttributesDisplayForms(mdObject: VisualizationObject.IVisualizationObject): string[];
 }
+
+declare class ApiResponse<T> {
+    public response: Response;
+    public responseBody: string;
+    getData(): T;
+}
+
+declare class ApiError extends Error {
+    public cause: Error | null;
+}
+
+
+declare class ApiResponseError extends ApiError {
+    public cause: Error | null;
+    // get statusCode..
+}
+
+
+declare class ApiNetworkError extends ApiError {
+    public cause: Error | null;
+}
+
+
 
 export interface IXhrMockInBeforeSend {
     setRequestHeader(key: string, value: string): void;
@@ -434,13 +459,11 @@ export interface IXhrSettings {
     beforeSend?(xhr: IXhrMockInBeforeSend, url: string): void;
 }
 
-export interface IXhr {
-    get<T>(uri: string, settings?: IXhrSettings): Promise<T>;
-    post(uri: string, settings?: IXhrSettings): Promise<Response>;
-    put(uri: string, settings?: IXhrSettings): Promise<Response>;
-    del(uri: string, settings?: IXhrSettings): Promise<Response>;
-    ajax(uri: string, settings?: IXhrSettings): Promise<Response>;
-    parseJSON(response: Response): any;
+export interface IXhr { // all throws ApiError()
+    get<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
+    post<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
+    put<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
+    ajax<T>(uri: string, settings?: IXhrSettings): Promise<ApiResponse<T>>;
     ajaxSetup(settings: IXhrSettings): void;
 }
 
