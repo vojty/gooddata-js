@@ -15,10 +15,10 @@
     "index.d.ts"
   ],
   "scripts": {
+    "dev": "tsc --watch",
     "build": "npm run build:lib && npm run build:dist",
     "build:lib": "rm -rf lib && babel src --out-dir lib",
     "build:dist": "rm -rf dist && grunt dist",
-    "prepublish": "npm run build",
     "test": "jest --watch",
     "validate": "eslint --ext .js,.jsx src test",
     "validate:ci": "yarn validate -f checkstyle -o ci/results/eslint-results.xml",
@@ -36,6 +36,12 @@
   },
   "devDependencies": {
     "@gooddata/typings": "2.0.0-alpha0",
+    "@types/es6-promise": "^3.3.0",
+    "@types/invariant": "^2.2.29",
+    "@types/isomorphic-fetch": "^0.0.34",
+    "@types/lodash": "^4.14.105",
+    "@types/md5": "^2.1.32",
+    "@types/qs": "^6.5.1",
     "async": "2.1.5",
     "babel-cli": "6.23.0",
     "babel-core": "6.23.1",

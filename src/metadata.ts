@@ -9,13 +9,14 @@ import {
 import { getIn, handlePolling, queryString } from './util';
 import { ApiResponseError } from './xhr';
 
+import { IMetadata, IXhr, IGetObjectsByQueryOptions, IGetObjectUsingOptions, IEtlPullResponse, IValidElementsOptions } from './interfaces';
 /**
  * Functions for working with metadata objects
  *
  * @class metadata
  * @module metadata
  */
-export function createModule(xhr) {
+export function createModule(xhr: IXhr): IMetadata {
     /**
      * Load all objects with given uris
      * (use bulk loading instead of getting objects one by one)
@@ -25,7 +26,7 @@ export function createModule(xhr) {
      * @param {Array} objectUris array of uris for objects to be loaded
      * @return {Array} array of loaded elements
      */
-    function getObjects(projectId, objectUris) {
+    function getObjects(projectId: string, objectUris: string[]): any {
         const LIMIT = 50;
         const uri = `/gdc/md/${projectId}/objects/get`;
 
@@ -64,8 +65,8 @@ export function createModule(xhr) {
      *        - limit {number} default is 50 (also maximum)
      * @return {Promise<Array>} array of returned objects
      */
-    function getObjectsByQuery(projectId, options) {
-        function getOnePage(uri, items = []) {
+    function getObjectsByQuery(projectId: string, options: IGetObjectsByQueryOptions): Promise<any[]> {
+        function getOnePage(uri: string, items: any[] = []): Promise<any> {
             return xhr.get(uri)
                 .then((r => r.getData()))
                 .then(({ objects }) => {
@@ -93,7 +94,7 @@ export function createModule(xhr) {
      * @return {jQuery promise} promise promise once resolved returns an array of
      *         entries returned by using2 resource
      */
-    function getObjectUsing(projectId, uri, options = {}) {
+    function getObjectUsing(projectId: string, uri: string, options: IGetObjectUsingOptions = {}) {
         const { types = [], nearest = false } = options;
         const resourceUri = `/gdc/md/${projectId}/using2`;
 
@@ -131,7 +132,7 @@ export function createModule(xhr) {
      * @return {jQuery promise} promise promise once resolved returns an array of
      *         entries returned by using2 resource
      */
-    function getObjectUsingMany(projectId, uris, options = {}) {
+    function getObjectUsingMany(projectId: string, uris: string[], options: IGetObjectUsingOptions = {}) {
         const { types = [], nearest = false } = options;
         const resourceUri = `/gdc/md/${projectId}/using2`;
 
@@ -144,7 +145,7 @@ export function createModule(xhr) {
         };
 
         return xhr.post(resourceUri, {
-            data: JSON.stringify(data)
+            body: JSON.stringify(data)
         }).then((r) => {
             if (!r.response.ok) {
                 const err = new Error(r.response.statusText);
@@ -205,8 +206,8 @@ export function createModule(xhr) {
      * @param {String} type - Optional, possible values are `metric`, `fact`, `attribute`
      * @return {Array} An array of dimension objects
      */
-    function getFolders(projectId, type) {
-        function getFolderEntries(pId, t) {
+    function getFolders(projectId: string, type: string) { // TODO enum?
+        function getFolderEntries(pId: string, t: string) {
             const typeURL = t ? `?type=${t}` : '';
 
             return xhr.get(`/gdc/md/${pId}/query/folders${typeURL}`)
@@ -270,7 +271,7 @@ export function createModule(xhr) {
      * @see getAvailableAttributes
      * @see getAvailableFacts
      */
-    function getAvailableMetrics(projectId, attrs) {
+    function getAvailableMetrics(projectId: string, attrs: string[]) {
         return xhr.post(`/gdc/md/${projectId}/availablemetrics`, {
             data: JSON.stringify(attrs)
         })
@@ -290,7 +291,7 @@ export function createModule(xhr) {
      * @see getAvailableMetrics
      * @see getAvailableFacts
      */
-    function getAvailableAttributes(projectId, metrics) {
+    function getAvailableAttributes(projectId: string, metrics: string[]) {
         return xhr.post(`/gdc/md/${projectId}/drillcrosspaths`, {
             body: JSON.stringify(metrics)
         })
@@ -310,7 +311,7 @@ export function createModule(xhr) {
      * @see getAvailableAttributes
      * @see getAvailableMetrics
      */
-    function getAvailableFacts(projectId, items) {
+    function getAvailableFacts(projectId: string, items: string[]) {
         return xhr.post(`/gdc/md/${projectId}/availablefacts`, {
             data: JSON.stringify(items)
         }).then(r => (r.response.ok ? r.getData() : r.response)).then(r => r.entries);
@@ -338,30 +339,30 @@ export function createModule(xhr) {
      * @return {Array} Array of folder object, each containing title and
      * corresponding items.
      */
-    function getFoldersWithItems(projectId, type) {
+    function getFoldersWithItems(projectId: string, type: string) {
         // fetch all folders of given type and process them
         return getFolders(projectId, type).then((folders) => {
             // Helper function to get details for each metric in the given
             // array of links to the metadata objects representing the metrics.
             // @return the array of promises
-            function getMetricItemsDetails(array) {
+            function getMetricItemsDetails(array: any[]) {
                 return Promise.all(array.map(getObjectDetails)).then((metricArgs) => {
-                    return metricArgs.map(item => item.metric);
+                    return metricArgs.map((item: any) => item.metric);
                 });
             }
 
             // helper mapBy function
-            function mapBy(array, key) {
-                return array.map((item) => {
+            function mapBy(array: any[], key: string) {
+                return array.map((item: any) => {
                     return item[key];
                 });
             }
 
             // helper for sorting folder tree structure
             // sadly @returns void (sorting == mutating array in js)
-            const sortFolderTree = (structure) => {
+            const sortFolderTree = (structure: any[]) => {
                 structure.forEach((folder) => {
-                    folder.items.sort((a, b) => {
+                    folder.items.sort((a: any, b: any) => {
                         if (a.meta.title < b.meta.title) {
                             return -1;
                         } else if (a.meta.title > b.meta.title) {
@@ -394,24 +395,24 @@ export function createModule(xhr) {
                     // get all attributes, subtract what we have and add rest in unsorted folder
                     return getAttributes(projectId).then((attributes) => {
                         // get uris of attributes which are in some dimension folders
-                        const attributesInFolders = [];
-                        folderDetails.forEach((fd) => {
-                            fd.dimension.content.attributes.forEach((attr) => {
+                        const attributesInFolders: any[] = [];
+                        folderDetails.forEach((fd: any) => {
+                            fd.dimension.content.attributes.forEach((attr: any) => {
                                 attributesInFolders.push(attr.meta.uri);
                             });
                         });
                         // unsortedUris now contains uris of all attributes which aren't in a folder
                         const unsortedUris =
                             attributes
-                                .filter(item => attributesInFolders.indexOf(item.link) === -1)
-                                .map(item => item.link);
+                                .filter((item: any) => attributesInFolders.indexOf(item.link) === -1)
+                                .map((item: any) => item.link);
                         // now get details of attributes in no folders
                         return Promise.all(unsortedUris.map(getObjectDetails))
                             .then((unsortedAttributeArgs) => { // TODO add map to r.json
                                 // get unsorted attribute objects
-                                const unsortedAttributes = unsortedAttributeArgs.map(attr => attr.attribute);
+                                const unsortedAttributes = unsortedAttributeArgs.map((attr: any) => attr.attribute);
                                 // create structure of folders with attributes
-                                const structure = folderDetails.map((folderDetail) => {
+                                const structure = folderDetails.map((folderDetail: any) => {
                                     return {
                                         title: folderDetail.dimension.meta.title,
                                         items: folderDetail.dimension.content.attributes
@@ -428,21 +429,21 @@ export function createModule(xhr) {
                             });
                     });
                 } else if (type === 'metric') {
-                    const entriesLinks = folderDetails.map(entry => mapBy(entry.folder.content.entries, 'link'));
+                    const entriesLinks = folderDetails.map((entry: any) => mapBy(entry.folder.content.entries, 'link'));
                     // get all metrics, subtract what we have and add rest in unsorted folder
                     return getMetrics(projectId).then((metrics) => {
                         // get uris of metrics which are in some dimension folders
-                        const metricsInFolders = [];
-                        folderDetails.forEach((fd) => {
-                            fd.folder.content.entries.forEach((metric) => {
+                        const metricsInFolders: string[] = [];
+                        folderDetails.forEach((fd: any) => {
+                            fd.folder.content.entries.forEach((metric: any) => {
                                 metricsInFolders.push(metric.link);
                             });
                         });
                         // unsortedUris now contains uris of all metrics which aren't in a folder
                         const unsortedUris =
                             metrics
-                                .filter(item => metricsInFolders.indexOf(item.link) === -1)
-                                .map(item => item.link);
+                                .filter((item: any) => metricsInFolders.indexOf(item.link) === -1)
+                                .map((item: any) => item.link);
 
                         // sadly order of parameters of concat matters! (we want unsorted last)
                         entriesLinks.push(unsortedUris);
@@ -464,7 +465,7 @@ export function createModule(xhr) {
                     });
                 }
 
-                return Promise.reject();
+                return Promise.reject(null);
             });
         });
     }
@@ -476,8 +477,8 @@ export function createModule(xhr) {
      * @param uri uri of the metadata object for which the identifier is to be retrieved
      * @return {String} object identifier
      */
-    function getObjectIdentifier(uri) {
-        function idFinder(obj) {
+    function getObjectIdentifier(uri: string) {
+        function idFinder(obj: any) { // TODO
             if (obj.attribute) {
                 return obj.attribute.content.displayForms[0].meta.identifier;
             } else if (obj.dimension) {
@@ -528,7 +529,7 @@ export function createModule(xhr) {
      * @param {Array} identifiers identifiers of the metadata objects
      * @return {Array} array of identifier + uri pairs
      */
-    function getUrisFromIdentifiers(projectId, identifiers) {
+    function getUrisFromIdentifiers(projectId: string, identifiers: string[]) {
         return xhr.post(`/gdc/md/${projectId}/identifiers`, {
             body: {
                 identifierToUri: identifiers
@@ -546,7 +547,7 @@ export function createModule(xhr) {
      * @param {Array} uris of the metadata objects
      * @return {Array} array of identifier + uri pairs
      */
-    function getIdentifiersFromUris(projectId, uris) {
+    function getIdentifiersFromUris(projectId: string, uris: string[]) {
         return xhr.post(`/gdc/md/${projectId}/identifiers`, {
             body: {
                 uriToIdentifier: uris
@@ -565,7 +566,7 @@ export function createModule(xhr) {
      * @param {('EXACT'|'WILD')} mode match mode, currently only EXACT supported
      * @return {Array} array of elementLabelUri objects
      */
-    function translateElementLabelsToUris(projectId, labelUri, patterns, mode = 'EXACT') {
+    function translateElementLabelsToUris(projectId: string, labelUri: string, patterns: string[], mode = 'EXACT') {
         return xhr.post(`/gdc/md/${projectId}/labels`, {
             body: {
                 elementLabelToUri: [
@@ -600,13 +601,13 @@ export function createModule(xhr) {
      *      - paging {Object}
      *      - elementsMeta {Object}
      */
-    function getValidElements(projectId, id, options = {}) {
+    function getValidElements(projectId: string, id: string, options: IValidElementsOptions = {}) {
         const query = pick(options, ['limit', 'offset', 'order', 'filter', 'prompt']);
         const queryParams = queryString(query);
 
         const requestBody = pick(options, ['uris', 'complement', 'includeTotalCountWithoutFilters', 'restrictiveDefinition']);
         return xhr.post(`/gdc/md/${projectId}/obj/${id}/validElements${queryParams}`.replace(/\?$/, ''), {
-            data: JSON.stringify({
+            body: JSON.stringify({
                 validElementsRequest: requestBody
             })
         }).then((r => r.getData()));
@@ -619,7 +620,7 @@ export function createModule(xhr) {
      * @method deleteObject
      * @param {String} uri of the object to be deleted
      */
-    function deleteObject(uri) {
+    function deleteObject(uri: string) {
         return xhr.del(uri);
     }
 
@@ -631,18 +632,18 @@ export function createModule(xhr) {
      * @param {String} projectId
      * @param {String} obj object definition
      */
-    function createObject(projectId, obj) {
+    function createObject(projectId: string, obj: any) {
         return xhr.post(`/gdc/md/${projectId}/obj?createAndGet=true`, {
             data: JSON.stringify(obj)
         }).then((r => r.getData()));
     }
 
-    function isTaskFinished(task) {
+    function isTaskFinished(task: any) {
         const taskState = task.wTaskStatus.status;
         return taskState === 'OK' || taskState === 'ERROR';
     }
 
-    function checkStatusForError(response) {
+    function checkStatusForError(response: any) {
         if (response.wTaskStatus.status === 'ERROR') {
             return Promise.reject(response);
         }
@@ -658,9 +659,9 @@ export function createModule(xhr) {
      * @param {String} maql
      * @param {Object} options for polling (maxAttempts, pollStep)
      */
-    function ldmManage(projectId, maql, options = {}) {
+    function ldmManage(projectId: string, maql: string, options = {}) {
         return xhr.post(`/gdc/md/${projectId}/ldm/manage2`, {
-            data: JSON.stringify({
+            body: JSON.stringify({
                 manage: { maql }
             })
         })
@@ -681,9 +682,9 @@ export function createModule(xhr) {
      * @param {String} uploadsDir
      * @param {Object} options for polling (maxAttempts, pollStep)
      */
-    function etlPull(projectId, uploadsDir, options = {}) {
+    function etlPull(projectId: string, uploadsDir: string, options = {}) {
         return xhr.post(`/gdc/md/${projectId}/etl/pull2`, {
-            data: JSON.stringify({
+            body: JSON.stringify({
                 pullIntegration: uploadsDir
             })
         })
@@ -705,6 +706,7 @@ export function createModule(xhr) {
         getAvailableMetrics,
         getDimensions,
         getFacts,
+        getFolders,
         getFoldersWithItems,
         getIdentifiersFromUris,
         getMetrics,

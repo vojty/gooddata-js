@@ -1,24 +1,26 @@
 // Copyright (C) 2007-2014, GoodData(R) Corporation. All rights reserved.
 import { get, clone } from 'lodash';
-import invariant from 'invariant';
-import qs from 'qs';
+import * as invariant from 'invariant';
+import * as qs from 'qs';
+import { Execution, AFM } from '@gooddata/typings';
+import { IXhr } from '../interfaces';
 
 const PAGE_SIZE = 500;
 const DEFAULT_DIMENSION_COUNT = 2;
 
-function getDimensionality(execution) {
+function getDimensionality(execution: AFM.IExecution): number {
     const dimensions = get(execution, 'execution.resultSpec.dimensions');
     return dimensions
         ? dimensions.length
         : DEFAULT_DIMENSION_COUNT;
 }
 
-function getLimit(offset) {
+function getLimit(offset: number[]) {
     return Array(offset.length).fill(PAGE_SIZE);
 }
 
 // works only for one or two dimensions
-export function mergePageData(result, currentPage) {
+export function mergePageData(result: Execution.IExecutionResult, currentPage: Execution.IExecutionResult) {
     const { paging, data, headerItems } = currentPage.executionResult;
     const rowOffset = paging.offset[0];
     if (result.executionResult.data[rowOffset]) { // appending columns to existing rows
@@ -29,7 +31,7 @@ export function mergePageData(result, currentPage) {
         result.executionResult.data.push(...data);
     }
 
-    const doDimension = (dim) => {
+    const doDimension = (dim: number) => {
         const otherDimension = (dim === 0 ? 1 : 0);
         const isEdge = (paging.offset[otherDimension] === 0);
         if (isEdge) {
@@ -48,7 +50,7 @@ export function mergePageData(result, currentPage) {
     return result;
 }
 
-export function nextPageOffset({ offset, total }) {
+export function nextPageOffset({ offset, total }: { offset: number[], total: number[]}) {
     const newOffset = clone(offset);
     const maxDimension = offset.length - 1;
     // we need last dimension first (aka columns, then rows) to allow array appending in merge fnc
@@ -62,8 +64,8 @@ export function nextPageOffset({ offset, total }) {
     return false;
 }
 
-export function createModule(xhr) {
-    function fetchExecutionResult(pollingUri, offset) {
+export function createModule(xhr: IXhr) {
+    function fetchExecutionResult(pollingUri: string, offset: number[]) {
         const [uriPart, queryPart] = pollingUri.split(/\?(.+)/);
         const query = {
             ...qs.parse(queryPart),
@@ -79,8 +81,8 @@ export function createModule(xhr) {
         });
     }
 
-    function getOnePage(pollingUri, offset, prevResult = null) {
-        return fetchExecutionResult(pollingUri, offset).then((executionResult) => {
+    function getOnePage(pollingUri: string, offset: number[], prevResult = null) {
+        return fetchExecutionResult(pollingUri, offset).then((executionResult: Execution.IExecutionResult) => {
             if (executionResult === null) {
                 return null;
             }
@@ -104,7 +106,7 @@ export function createModule(xhr) {
      * @return {Object} Structure with `executionResult` and `executionResponse` -
      *  See https://github.com/gooddata/gooddata-typings/blob/master/index.ts#L294
      */
-    function executeAfm(projectId, execution) {
+    function executeAfm(projectId: string, execution: AFM.IExecution) {
         const dimensionality = getDimensionality(execution);
         invariant(dimensionality <= 2, 'executeAfm does not support more than 2 dimensions');
 
@@ -113,7 +115,7 @@ export function createModule(xhr) {
             .then((executionResponse) => {
                 const offset = Array(dimensionality).fill(0); // offset holds information on dimensionality
                 const pollingUri = executionResponse.executionResponse.links.executionResult;
-                return getOnePage(pollingUri, offset).then((executionResult) => {
+                return getOnePage(pollingUri, offset).then((executionResult: Execution.IExecutionResult) => {
                     return {
                         executionResponse,
                         executionResult

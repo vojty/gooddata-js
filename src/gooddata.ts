@@ -12,6 +12,10 @@ import { createModule as adminFactory } from './admin';
 import { createModule as loadAttributesMapFactory } from './utils/attributesMapLoader';
 import { getAttributesDisplayForms } from './utils/visualizationObjectHelper';
 
+import { ISdk, IConfig, IXhr, IUser, IMetadata, IExecution, IProject, ICatalogue, IUtils } from './interfaces';
+
+export { ISdk };
+
 /**
  * # JS SDK
  * Here is a set of functions that mostly are a thin wraper over the [GoodData API](https://developer.gooddata.com/api).
@@ -29,7 +33,18 @@ import { getAttributesDisplayForms } from './utils/visualizationObjectHelper';
  * @module sdk
  * @class sdk
  */
-class SDK {
+export class SDK implements ISdk {
+    public config: IConfig;
+    public xhr: IXhr;
+    public user: IUser;
+    public md: IMetadata;
+    public execution: IExecution;
+    public project: IProject;
+    public catalogue: ICatalogue;
+    public admin: any;
+    public utils: IUtils;
+    public configStorage: any;
+
     constructor(config = {}) {
         this.configStorage = sanitizeConfig(config); // must be plain object, SDK modules MUST use this storage
 
@@ -58,10 +73,10 @@ class SDK {
  * @param {object|null} config object to be passed to SDK constructor
  * @method setCustomDomain
  */
-export function factory(config = {}) {
+export function factory(config = {}): ISdk {
     return new SDK(config);
 }
 
-const defaultInstance = factory();
+const defaultInstance: ISdk = factory();
 
 export default defaultInstance;

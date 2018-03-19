@@ -2,6 +2,7 @@
 
 import { get } from 'lodash';
 import { delay } from './utils/promise';
+
 import { name as pkgName, version as pkgVersion } from '../package.json';
 
 /**
@@ -25,7 +26,13 @@ export const thisPackage = { name: pkgName, version: pkgVersion };
  * @method getIn
  * @private
  */
-export const getIn = path => object => get(object, path);
+export const getIn = (path: string) => (object: any) => get(object, path);
+
+export interface IPollingOptions {
+    attempts?: number;
+    maxAttempts?: number;
+    pollStep?: number;
+};
 
 /**
  * Helper for polling
@@ -35,7 +42,7 @@ export const getIn = path => object => get(object, path);
  * @param {Object} options for polling (maxAttempts, pollStep)
  * @private
  */
-export const handlePolling = (xhrGet, uri, isPollingDone, options = {}) => {
+export const handlePolling = (xhrGet: any, uri: string, isPollingDone: Function, options: IPollingOptions = {}) => { // TODO
     const {
         attempts = 0,
         maxAttempts = 50,
@@ -67,8 +74,8 @@ export const handlePolling = (xhrGet, uri, isPollingDone, options = {}) => {
  * @param {Object} query parameters possibly including arrays inside
  * @returns {string} querystring
  */
-export function queryString(query) {
-    function getSingleParam(key, value) {
+export function queryString(query: any) {
+    function getSingleParam(key: string, value: string) {
         return (Array.isArray(value) ?
             value.map(item => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`).join('&') :
             `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);

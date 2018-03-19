@@ -9,7 +9,8 @@ import {
 } from 'lodash';
 
 import { thisPackage } from './util';
-import fetch from './utils/fetch';
+import { fetch } from './utils/fetch';
+import { IXhr, IXhrSettings } from './interfaces';
 
 /**
  * Ajax wrapper around GDC authentication mechanisms, SST and TT token handling and polling.
@@ -27,7 +28,7 @@ const DEFAULT_POLL_DELAY = 1000;
 
 function simulateBeforeSend(url, settings) {
     const xhrMockInBeforeSend = {
-        setRequestHeader(key, value) {
+        setRequestHeader(key: string, value: string) {
             _set(settings, ['headers', key], value);
         }
     };
@@ -37,7 +38,7 @@ function simulateBeforeSend(url, settings) {
     }
 }
 
-function enrichSettingWithCustomDomain(originalUrl, originalSettings, domain) {
+function enrichSettingWithCustomDomain(originalUrl: string, originalSettings: any, domain: string) { // TODO any
     let url = originalUrl;
     const settings = originalSettings;
     if (domain) {
@@ -62,10 +63,17 @@ export function handlePolling(url, settings, sendRequest) {
     });
 }
 
-export const originPackageHeaders = ({ name, version }) => ({
-    'X-GDC-JS-PKG': name,
-    'X-GDC-JS-PKG-VERSION': version
-});
+export interface IPackageHeaders {
+    name: string;
+    version: string;
+};
+
+export function originPackageHeaders({ name, version }: IPackageHeaders) {
+    return {
+        'X-GDC-JS-PKG': name,
+        'X-GDC-JS-PKG-VERSION': version
+    };
+}
 
 export class ApiError extends Error {
     constructor(message, cause) {
@@ -112,7 +120,7 @@ export function createModule(configStorage) {
 
     defaults(configStorage, { xhrSettings: {} });
 
-    function createRequestSettings(customSettings) {
+    function createRequestSettings(customSettings: any) {
         const settings = merge(
             {
                 headers: {
@@ -146,7 +154,7 @@ export function createModule(configStorage) {
      *
      * @param settings object XHR settings as
      */
-    function ajaxSetup(settings) {
+    function ajaxSetup(settings: any) {
         Object.assign(configStorage.xhrSettings, settings);
     }
 

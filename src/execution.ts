@@ -2,6 +2,7 @@
 import { createModule as experimentalExecutionsFactory } from './execution/experimental-executions';
 import { createModule as loadAttributesMapFactory } from './utils/attributesMapLoader';
 import { createModule as executeAfmFactory } from './execution/execute-afm';
+import { IExecution, IMetadata, IXhr } from './interfaces';
 
 /**
  * Execution endpoints
@@ -10,7 +11,7 @@ import { createModule as executeAfmFactory } from './execution/execute-afm';
  * @class execution
  *
  */
-export function createModule(xhr, md) {
+export function createModule(xhr: IXhr, md: IMetadata): IExecution {
     const loadAttributesMap = loadAttributesMapFactory(md);
     const {
         getData,

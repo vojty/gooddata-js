@@ -8,6 +8,7 @@ import { createModule as clientsFactory } from './admin/clients';
 import { createModule as segmentsFactory } from './admin/segments';
 import { createModule as logsFactory } from './admin/logs';
 import { createModule as contractsFactory } from './admin/contracts';
+import { IXhr } from './interfaces';
 
 /**
  * Network-UI support methods. Mostly private
@@ -16,7 +17,7 @@ import { createModule as contractsFactory } from './admin/contracts';
  * @class admin
  *
  */
-export function createModule(xhr) {
+export function createModule(xhr: IXhr) {
     return {
         dataProducts: dataProductsFactory(xhr),
         domainDataProducts: domainDataProductsFactory(xhr),

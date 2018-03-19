@@ -2,17 +2,18 @@ import {
     get,
     set
 } from 'lodash';
+import { IMetadata } from '../interfaces';
 
-function getAttributeUris(displayForms) {
+function getAttributeUris(displayForms: any) {
     return displayForms.map(
-        displayForm => get(displayForm, ['attributeDisplayForm', 'content', 'formOf'])
+        (displayForm: any) => get(displayForm, ['attributeDisplayForm', 'content', 'formOf'])
     );
 }
 
-function createAttributesMap(displayForms, attributes) {
-    return displayForms.reduce((attributesMap, displayForm) => {
+function createAttributesMap(displayForms: any, attributes: any) {
+    return displayForms.reduce((attributesMap: any, displayForm: any) => {
         const dfUri = get(displayForm, ['attributeDisplayForm', 'meta', 'uri']);
-        const attribute = attributes.find(attr =>
+        const attribute = attributes.find((attr: any) =>
             get(attr, ['attribute', 'meta', 'uri']) === get(displayForm, ['attributeDisplayForm', 'content', 'formOf'])
         );
 
@@ -21,13 +22,13 @@ function createAttributesMap(displayForms, attributes) {
     {});
 }
 
-export function getMissingUrisInAttributesMap(displayFormsUris, attributesMap) {
+export function getMissingUrisInAttributesMap(displayFormsUris: string[], attributesMap: any) {
     const uris = displayFormsUris || [];
     return uris.filter(uri => !attributesMap[uri]);
 }
 
-export function createModule(md) {
-    return function loadAttributesMap(projectId, attributeDisplayFormUris) {
+export function createModule(md: IMetadata) {
+    return function loadAttributesMap(projectId: string, attributeDisplayFormUris: string[]) {
         if (attributeDisplayFormUris.length === 0) {
             return Promise.resolve({});
         }

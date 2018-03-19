@@ -15,7 +15,7 @@ import { set as _set, get as _get } from 'lodash';
 
 const URL_REGEXP = '(?:(https)://+|(www\\.)?)\\w[:;,\\.?\\[\\]\\w/~%&=+#-@!]*';
 
-export function sanitizeDomain(domain) {
+export function sanitizeDomain(domain: string) {
     if (domain === null) {
         return undefined;
     }
@@ -37,7 +37,7 @@ export function sanitizeDomain(domain) {
  * @method sanitizeConfig
  * @return {object|undefiend} config with sanitized domain
  */
-export function sanitizeConfig(config) {
+export function sanitizeConfig(config: any) {
     const sanitized = { ...config };
     if (config.domain) {
         sanitized.domain = sanitizeDomain(config.domain);
@@ -52,7 +52,7 @@ export function sanitizeConfig(config) {
  * @method createModule
  * @return SDK config module
  */
-export function createModule(configStorage) {
+export function createModule(configStorage: any) {
     if (arguments.length !== 1) {
         throw new Error('Config module has to be called with exactly one argument.');
     }
@@ -66,7 +66,7 @@ export function createModule(configStorage) {
      * @param {String|null} domain valid domain starting with https:// or null for removing
      * @method setCustomDomain
      */
-    function setCustomDomain(domain) {
+    function setCustomDomain(domain: string) {
         configStorage.domain = sanitizeDomain(domain); // eslint-disable-line no-param-reassign
     }
 
@@ -87,7 +87,7 @@ export function createModule(configStorage) {
      * @param {String} version package version (semver)
      * @private
      */
-    function setJsPackage(name, version) {
+    function setJsPackage(name: string, version: string) {
         if (!configStorage.originPackage) { // only set the first (topmost) package
             configStorage.originPackage = { name, version }; // eslint-disable-line no-param-reassign
         }
@@ -104,11 +104,11 @@ export function createModule(configStorage) {
         return configStorage.originPackage;
     }
 
-    function setRequestHeader(key, value) {
+    function setRequestHeader(key: string, value: string) {
         _set(configStorage, ['xhrSettings', 'headers', key], value);
     }
 
-    function getRequestHeader(key) {
+    function getRequestHeader(key: string) {
         return _get(configStorage, ['xhrSettings', 'headers', key]);
     }
 

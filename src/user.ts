@@ -1,13 +1,14 @@
 // Copyright (C) 2007-2017, GoodData(R) Corporation. All rights reserved.
+import { IXhr, IUser } from './interfaces';
 
-export function createModule(xhr) {
+export function createModule(xhr: IXhr): IUser {
     /**
      * Find out whether a user is logged in
      *
      * @return {Promise} resolves with true if user logged in, false otherwise
      * @method isLoggedIn
      */
-    function isLoggedIn() {
+    function isLoggedIn(): Promise<boolean> {
         return new Promise((resolve, reject) => {
             xhr.get('/gdc/account/token').then((r) => {
                 if (r.response.ok) {
@@ -15,7 +16,7 @@ export function createModule(xhr) {
                 }
 
                 resolve(false);
-            }, (err) => {
+            }, (err: any) => {
                 if (err.response.status === 401) {
                     resolve(false);
                 } else {
@@ -34,7 +35,7 @@ export function createModule(xhr) {
      * @param {String} username
      * @param {String} password
      */
-    function login(username, password) {
+    function login(username: string, password: string) {
         return xhr.post('/gdc/account/login', {
             body: JSON.stringify({
                 postUserLogin: {
@@ -66,7 +67,7 @@ export function createModule(xhr) {
      * @method logout
      */
     function logout() {
-        return isLoggedIn().then((loggedIn) => {
+        return isLoggedIn().then((loggedIn: boolean) => {
             if (loggedIn) {
                 return xhr
                     .get('/gdc/app/account/bootstrap')
@@ -89,9 +90,9 @@ export function createModule(xhr) {
      * @param {String} profileId - User profile identifier
      * @param {Object} profileSetting
     */
-    function updateProfileSettings(profileId, profileSetting) {
+    function updateProfileSettings(profileId: string, profileSetting: any) { // TODO
         return xhr.put(`/gdc/account/profile/${profileId}/settings`, {
-            data: profileSetting
+            body: profileSetting
         });
     }
 

@@ -4,8 +4,8 @@
  * @param {Number} ms time in miliseconds
  * @return {Promise}
  */
-export function delay(ms) {
-    return new Promise((resolve) => {
+export function delay(ms: number) {
+    return new Promise((resolve: Function) => {
         setTimeout(() => resolve(), ms);
     });
 }

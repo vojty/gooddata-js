@@ -48,7 +48,7 @@ export const DEPLOY_SEGMENT = `${CONTRACT_DOMAIN}/dataProducts/:dataProductId/se
 
 // parse params in route string accoring to template
 // returns params as plain object
-export const parse = (route, template) => {
+export const parse = (route: string, template: string) => {
     const parsedRoute = route.startsWith('http') ?
         route.match(/^(https?:)\/\/(([^:/?#]*)(?::([0-9]+))?)([/]{0,1}[^?#]*)(\?[^#]*|)(#.*|)$/)[5]
         : route;
@@ -69,5 +69,5 @@ export const parse = (route, template) => {
 
 // interpolates specified parameters from params into
 // the specified route string and returns the result
-export const interpolate = (route, params, query) =>
+export const interpolate = (route: string, params: any, query: any = {}) =>
     route.split('/').map(view => (view[0] === ':' ? params[view.substr(1)] : view)).join('/') + queryString(query);

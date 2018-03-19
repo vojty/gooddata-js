@@ -1,4 +1,5 @@
 import { get, find, omit, cloneDeep } from 'lodash';
+import { IXhr, IExecution } from './interfaces';
 
 const REQUEST_DEFAULTS = {
     types: ['attribute', 'metric', 'fact'],
@@ -25,7 +26,7 @@ const LOAD_DATE_DATASET_DEFAULTS = {
  * </ul>
  * @returns {Object} "requiredDataSets" object hash.
  */
-const getRequiredDataSets = (options) => {
+const getRequiredDataSets = (options: any) => {
     if (get(options, 'returnAllRelatedDateDataSets')) {
         return {};
     }
@@ -44,12 +45,12 @@ const getRequiredDataSets = (options) => {
     return { requiredDataSets: { type: 'PRODUCTION' } };
 };
 
-export function createModule(xhr, execution) {
-    function bucketItemsToExecConfig(projectId, mdObj, options = {}) {
-        return execution.mdToExecutionDefinitionsAndColumns(projectId, mdObj, options).then((definitionsAndColumns) => {
+export function createModule(xhr: IXhr, execution: IExecution) {
+    function bucketItemsToExecConfig(projectId: string, mdObj: any, options = {}) {
+        return execution.mdToExecutionDefinitionsAndColumns(projectId, mdObj, options).then((definitionsAndColumns: any) => {
             const definitions = get(definitionsAndColumns, 'definitions');
 
-            return get(definitionsAndColumns, 'columns', []).map((column) => {
+            return get(definitionsAndColumns, 'columns', []).map((column: any) => {
                 const definition = find(definitions, ({ metricDefinition }) =>
                     get(metricDefinition, 'identifier') === column
                 );
@@ -63,7 +64,7 @@ export function createModule(xhr, execution) {
         });
     }
 
-    function loadCatalog(projectId, catalogRequest) {
+    function loadCatalog(projectId: string, catalogRequest: any) {
         const uri = `/gdc/internal/projects/${projectId}/loadCatalog`;
 
         return xhr.post(uri, { data: { catalogRequest } })
@@ -71,7 +72,7 @@ export function createModule(xhr, execution) {
             .then(data => data.catalogResponse);
     }
 
-    function loadItems(projectId, options = {}) {
+    function loadItems(projectId: string, options = {}) {
         const request = omit({
             ...REQUEST_DEFAULTS,
             ...options,
@@ -86,7 +87,7 @@ export function createModule(xhr, execution) {
         const attributesMap = get(options, 'attributesMap');
         const hasBuckets = get(mdObj, 'buckets') !== undefined;
         if (hasBuckets) {
-            return bucketItemsToExecConfig(projectId, mdObj, { attributesMap }).then(bucketItems =>
+            return bucketItemsToExecConfig(projectId, mdObj, { attributesMap }).then((bucketItems: any) =>
                 loadCatalog(projectId, {
                     ...request,
                     bucketItems
@@ -97,7 +98,7 @@ export function createModule(xhr, execution) {
         return loadCatalog(projectId, request);
     }
 
-    function requestDateDataSets(projectId, dateDataSetsRequest) {
+    function requestDateDataSets(projectId: string, dateDataSetsRequest: any) {
         const uri = `/gdc/internal/projects/${projectId}/loadDateDataSets`;
 
         return xhr.post(uri, { data: { dateDataSetsRequest } })
@@ -105,13 +106,13 @@ export function createModule(xhr, execution) {
             .then(data => data.dateDataSetsResponse);
     }
 
-    function loadDateDataSets(projectId, options) {
+    function loadDateDataSets(projectId: string, options: any) {
         const mdObj = get(cloneDeep(options), 'bucketItems');
         const bucketItemsPromise = mdObj ?
             bucketItemsToExecConfig(projectId, mdObj, { removeDateItems: true, attributesMap: get(options, 'attributesMap') }) :
             Promise.resolve();
 
-        return bucketItemsPromise.then((bucketItems) => {
+        return bucketItemsPromise.then((bucketItems: any) => {
             const omittedOptions = ['filter', 'types', 'paging', 'dataSetIdentifier', 'returnAllDateDataSets', 'returnAllRelatedDateDataSets', 'attributesMap'];
             // includeObjectsWithTags has higher priority than excludeObjectsWithTags,
             // so when present omit excludeObjectsWithTags

@@ -1,6 +1,6 @@
 // Copyright (C) 2007-2014, GoodData(R) Corporation. All rights reserved.
-import md5 from 'md5';
-import invariant from 'invariant';
+import * as md5 from 'md5';
+import * as invariant from 'invariant';
 import {
     cloneDeep,
     compact,
@@ -18,7 +18,7 @@ import {
     set
 } from 'lodash';
 
-import Rules from '../utils/rules';
+import { Rules } from '../utils/rules';
 import { sortDefinitions } from '../utils/definitions';
 import {
     getMissingUrisInAttributesMap

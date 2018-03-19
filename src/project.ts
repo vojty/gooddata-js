@@ -1,5 +1,6 @@
 // Copyright (C) 2007-2014, GoodData(R) Corporation. All rights reserved.
 import { getIn, handlePolling } from './util';
+import { IXhr, ITimezone, IColor } from './interfaces';
 
 /**
  * Functions for working with projects
@@ -29,14 +30,14 @@ const DEFAULT_PALETTE = [
     { r: 0xbf, g: 0xbf, b: 0xbf }
 ];
 
-const isProjectCreated = (project) => {
+const isProjectCreated = (project: any) => { // TODO
     const projectState = project.content.state;
 
     return projectState === 'ENABLED' ||
         projectState === 'DELETED';
 };
 
-export function createModule(xhr) {
+export function createModule(xhr: IXhr) {
     /**
      * Get current project id
      *
@@ -120,13 +121,13 @@ export function createModule(xhr) {
      * @method setColorPalette
      * @param {String} projectId - GD project identifier
      * @param {Array} colors - An array of colors that we want to use within the project.
-     * Each color should be an object with r, g, b fields.
+     * Each color should be an object with r, g, b fields. // TODO really object?
      */
-    function setColorPalette(projectId, colors) {
+    function setColorPalette(projectId: string, colors: IColor[]) {
         return xhr.put(`/gdc/projects/${projectId}/styleSettings`, {
-            data: {
+            body: {
                 styleSettings: {
-                    chartPalette: colors.map((fill, idx) => {
+                    chartPalette: colors.map((fill, idx: number) => {
                         return { fill, guid: `guid${idx}` };
                     })
                 }
@@ -146,7 +147,7 @@ export function createModule(xhr) {
      * @method getTimezone
      * @param {String} projectId - GD project identifier
      */
-    function getTimezone(projectId) {
+    function getTimezone(projectId: string): Promise<ITimezone> {
         const bootstrapUrl = `/gdc/app/account/bootstrap?projectId=${projectId}`;
 
         return xhr.get(bootstrapUrl)
@@ -156,14 +157,13 @@ export function createModule(xhr) {
             });
     }
 
-    function setTimezone(projectId, timezone) {
+    function setTimezone(projectId: string, timezone: ITimezone) {
         const timezoneServiceUrl = `/gdc/md/${projectId}/service/timezone`;
         const data = {
             service: { timezone }
         };
 
-        return xhr.ajax(timezoneServiceUrl, {
-            method: 'POST',
+        return xhr.post(timezoneServiceUrl, {
             body: data
         }).then((r => r.getData()));
     }
@@ -179,7 +179,7 @@ export function createModule(xhr) {
      * @param {Object} options for project creation (summary, projectTemplate, ...)
      * @return {Object} created project object
      */
-    function createProject(title, authorizationToken, options = {}) {
+    function createProject(title: string, authorizationToken: string, options: any = {}) {
         const {
             summary,
             projectTemplate,
@@ -207,7 +207,7 @@ export function createModule(xhr) {
         })
             .then((r => r.getData()))
             .then(project =>
-                handlePolling(xhr.get, project.uri, (response) => {
+                handlePolling(xhr.get, project.uri, (response: any) => { // TODO project response
                     return isProjectCreated(response.project);
                 }, options));
     }
@@ -218,7 +218,7 @@ export function createModule(xhr) {
      * @method deleteProject
      * @param {String} projectId
      */
-    function deleteProject(projectId) {
+    function deleteProject(projectId: string) {
         return xhr.del(`/gdc/projects/${projectId}`);
     }
 

@@ -4,24 +4,24 @@ import {
 
 const BUCKETS = 'buckets';
 
-export function getBuckets(mdObj) {
+export function getBuckets(mdObj: any) {
     return get(mdObj, BUCKETS, []);
 }
 
-function isAttribute(bucketItem) {
+function isAttribute(bucketItem: any) {
     return get(bucketItem, 'visualizationAttribute') !== undefined;
 }
 
-export function isAttributeMeasureFilter(measureFilter) {
+export function isAttributeMeasureFilter(measureFilter: any) {
     return (get(measureFilter, 'positiveAttributeFilter') || get(measureFilter, 'negativeAttributeFilter')) !== undefined;
 }
 
-function isMeasure(bucketItem) {
+function isMeasure(bucketItem: any) {
     return get(bucketItem, 'measure') !== undefined;
 }
 
-function getAttributesInBucket(bucket) {
-    return get(bucket, 'items').reduce((list, bucketItem) => {
+function getAttributesInBucket(bucket: any) {
+    return get(bucket, 'items').reduce((list: any, bucketItem: any) => {
         if (isAttribute(bucketItem)) {
             list.push(get(bucketItem, 'visualizationAttribute'));
         }
@@ -29,14 +29,14 @@ function getAttributesInBucket(bucket) {
     }, []);
 }
 
-export function getAttributes(mdObject) {
+export function getAttributes(mdObject: any) {
     const buckets = getBuckets(mdObject);
-    return buckets.reduce((categoriesList, bucket) =>
+    return buckets.reduce((categoriesList: any, bucket: any) =>
         categoriesList.concat(getAttributesInBucket(bucket)), []);
 }
 
-function getMeasuresInBucket(bucket) {
-    return get(bucket, 'items').reduce((list, bucketItem) => {
+function getMeasuresInBucket(bucket: any) {
+    return get(bucket, 'items').reduce((list: any, bucketItem: any) => {
         if (isMeasure(bucketItem)) {
             list.push(get(bucketItem, 'measure'));
         }
@@ -45,37 +45,37 @@ function getMeasuresInBucket(bucket) {
     }, []);
 }
 
-export function getDefinition(measure) {
+export function getDefinition(measure: any) {
     return get(measure, ['definition', 'measureDefinition'], {});
 }
 
-export function getMeasures(mdObject) {
+export function getMeasures(mdObject: any) {
     const buckets = getBuckets(mdObject);
-    return buckets.reduce((measuresList, bucket) =>
+    return buckets.reduce((measuresList: any, bucket: any) =>
         measuresList.concat(getMeasuresInBucket(bucket)), []);
 }
 
-export function getMeasureFilters(measure) {
+export function getMeasureFilters(measure: any) {
     return get(getDefinition(measure), 'filters', []);
 }
 
-export function getMeasureAttributeFilters(measure) {
+export function getMeasureAttributeFilters(measure: any) {
     return getMeasureFilters(measure).filter(isAttributeMeasureFilter);
 }
 
-function getAttributeFilters(mdObject) {
-    return getMeasures(mdObject).reduce((filters, measure) =>
+function getAttributeFilters(mdObject: any) {
+    return getMeasures(mdObject).reduce((filters: any, measure: any) =>
         filters.concat(getMeasureAttributeFilters(measure)),
     []);
 }
 
-function getAttributeFilterDisplayForm(measureFilter) {
+function getAttributeFilterDisplayForm(measureFilter: any) {
     return get(measureFilter, ['positiveAttributeFilter', 'displayForm', 'uri']) ||
         get(measureFilter, ['negativeAttributeFilter', 'displayForm', 'uri']);
 }
 
-export function getAttributesDisplayForms(mdObject) {
-    const attributesDfs = getAttributes(mdObject).map(attribute => get(attribute, ['displayForm', 'uri']));
+export function getAttributesDisplayForms(mdObject: any) {
+    const attributesDfs = getAttributes(mdObject).map((attribute: any) => get(attribute, ['displayForm', 'uri']));
     const attrMeasureFilters = getAttributeFilters(mdObject);
     const attrMeasureFiltersDfs = attrMeasureFilters.map(getAttributeFilterDisplayForm);
     return [...attrMeasureFiltersDfs, ...attributesDfs];

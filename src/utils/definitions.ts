@@ -2,22 +2,29 @@ import { difference, map } from 'lodash';
 
 const IDENTIFIER_REGEX = /{\S+}/g;
 
-function getDependencies({ metricDefinition }) {
-    return (metricDefinition.expression.match(IDENTIFIER_REGEX) || [])
-        .map(s => s.substring(1, s.length - 1));
+export interface IMetric { // TODO
+    metricDefinition: {
+        expression: string;
+        identifier: string;
+    }
 }
 
-function getIdentifier({ metricDefinition }) {
+function getDependencies({ metricDefinition }: IMetric) {
+    return (metricDefinition.expression.match(IDENTIFIER_REGEX) || [])
+        .map((s: string) => s.substring(1, s.length - 1));
+}
+
+function getIdentifier({ metricDefinition }: IMetric) {
     return metricDefinition.identifier;
 }
 
-function resolvedDependencies(resolved, { dependencies }) {
+function resolvedDependencies(resolved: any[], { dependencies }: any) {
     const identifiers = map(resolved, 'identifier');
 
     return difference(dependencies, identifiers).length === 0;
 }
 
-function scan(resolved, unresolved) {
+function scan(resolved: any[], unresolved: any[]) {
     for (let i = 0; i < unresolved.length; i += 1) {
         const tested = unresolved[i];
 
@@ -29,8 +36,8 @@ function scan(resolved, unresolved) {
     }
 }
 
-function sort(unresolved) {
-    const resolved = [];
+function sort(unresolved: any[]) {
+    const resolved: any[] = [];
     let lastLength;
 
     while (unresolved.length > 0) {
@@ -45,8 +52,8 @@ function sort(unresolved) {
     return resolved;
 }
 
-export function sortDefinitions(definitions) {
-    const indexed = definitions.map(definition => ({
+export function sortDefinitions(definitions: any[]) {
+    const indexed = definitions.map((definition: any) => ({
         definition,
         identifier: getIdentifier(definition),
         dependencies: getDependencies(definition)
